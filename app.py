@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog,
 from PyQt5.QtGui import QFont
 import threading
 
-
+import link
 
 
 class MainWindow(QMainWindow):
@@ -118,12 +118,29 @@ class MainWindow(QMainWindow):
       date = date
       print(location,skill,date)
       self.state.setText("Processing...")
-      m_monster = monster.monster()
-      monster_job = m_monster.init(location,skill,date)
-      m_indeed = indeed.indeed()
-      indeed_job = m_indeed.init(location,skill,date)
-      job = indeed_job + monster_job
-      # +monster_job
+      # m_monster = monster.monster()
+      # monster_job = m_monster.init(location,skill,date)
+      # m_indeed = indeed.indeed()
+      # indeed_job = m_indeed.init(location,skill,date)
+      # m_link = link.link()
+      # link_job  = m_link.init(location,skill,date)
+
+      # Create threads for each function
+      thread_monster = threading.Thread(target=self.run_monster, args=(location, skill, date,))
+      thread_indeed = threading.Thread(target=self.run_indeed, args=(location, skill, date,))
+      thread_link = threading.Thread(target=self.run_link, args=(location, skill, date,))
+
+      # Start the threads
+      thread_monster.start()
+      thread_indeed.start()
+      thread_link.start()
+
+      # Wait for all threads to finish
+      thread_monster.join()
+      thread_indeed.join()
+      thread_link.join()
+
+      job = self.indeed_job + self.monster_job+self.link_job
       excel = "job.xlsx"
       file = open(excel,"a")
       file.close()
@@ -132,7 +149,25 @@ class MainWindow(QMainWindow):
       df.to_excel(excel,index=False)
       print(df)
       self.state.setText("Done!")
-   
+
+    def run_monster(self,location, skill, date):
+        m_monster = monster.monster()
+        self.monster_job = m_monster.init(location, skill, date)
+        # Your processing with monster_job
+
+    def run_indeed(self,location, skill, date):
+        m_indeed = indeed.indeed()
+        self.indeed_job = m_indeed.init(location, skill, date)
+        # Your processing with indeed_job
+
+    def run_link(self,location, skill, date):
+        m_link = link.link()
+        self.link_job = m_link.init(location, skill, date)
+        # Your processing with link_job
+
+
+
+    
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
