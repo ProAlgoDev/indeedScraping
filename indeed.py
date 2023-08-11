@@ -1,40 +1,33 @@
-import requests
-from bs4 import BeautifulSoup
+
 from asyncio.windows_events import NULL
-from base64 import standard_b64decode
-# import keyword
+
+
 import undetected_chromedriver as uc
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.proxy import Proxy, ProxyType
+
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 import time
-import threading
-import pyperclip
-import os
-import random
-import json
-import glob
-import zipfile
-import requests
-import smtplib
-# import asyncio
-from email.mime.text import MIMEText
-import tkinter as tk
-import re
-from bs4 import BeautifulSoup
+
+
 import pandas as pd
-import openpyxl
+
 
 class indeed():   
-    def init(self):
+    def init(self,location,skill,date):
+        location = location
+        skill=skill
+        date = int(date)
+
         self.job= []
         op = uc.ChromeOptions()
         custom_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
         op.add_argument("--disable-blink-feature=AutomationControlled")
         op.add_argument(f'--user-agent={custom_user_agent}')
+        op.add_argument(f'--headless={True}')
+
         self.driver = uc.Chrome(options=op)
 
         self.driver.execute_script(
@@ -42,7 +35,7 @@ class indeed():
 
 
         # search_url = "https://fr.indeed.com/jobs?q=python%2Creact%2Cphp&l=Paris&fromage=1"
-        search_url = "https://fr.indeed.com/jobs?q=python&l=Paris&fromage=1"
+        search_url = f"https://fr.indeed.com/jobs?q={skill}&l={location}&fromage={date}"
         self.driver.get(search_url)
         time.sleep(1)
         try:
@@ -66,6 +59,7 @@ class indeed():
                 self.job_fetch()
         except:
             pass
+        self.driver.quit()
         return self.job
     def job_fetch(self):
 
@@ -98,11 +92,11 @@ class indeed():
                     #     pass
                     tmp_date = i.find_element(By.XPATH, ".//div[@class='heading6 tapItem-gutter result-footer']/span[@class='date']").text
                     indeedjob["post_date"] = tmp_date[6:]
-                    print("title------",indeedjob["title"])
-                    print("job_link------",indeedjob["job_link"])
-                    print("company------",indeedjob["company"])
-                    print("location------",indeedjob["location"])
-                    print("post_date------",indeedjob["post_date"])
+                    # print("title------",indeedjob["title"])
+                    # print("job_link------",indeedjob["job_link"])
+                    # print("company------",indeedjob["company"])
+                    # print("location------",indeedjob["location"])
+                    # print("post_date------",indeedjob["post_date"])
                     # print("salary------",indeedjob["salary"])
                     # adata.click()
 
@@ -139,12 +133,3 @@ class indeed():
             self.active_flag = False
             pass
 
-excel = "job.xlsx"
-file = open(excel,"a")
-file.close()
-instance = indeed()
-job = instance.init()
-df = pd.DataFrame(job)
-df.to_excel(excel)
-print(df)
-input("fff")
