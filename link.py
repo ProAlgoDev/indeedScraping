@@ -13,7 +13,8 @@ import time
 
 
 class link():
-    def init(self,location,skill,date):
+    def init(self,location,skill,date,mskill):
+        self.mskill = mskill
         location = location
         skill = skill
         date = int(date)
@@ -32,7 +33,7 @@ class link():
         # https://fr.linkedin.com/jobs/search?keywords=Php&location=Paris%2C%20%C3%8Ele-de-France%2C%20France&locationId=&geoId=101240143&f_TPR=r604800&distance=25&position=1&pageNum=0
         # https://fr.linkedin.com/jobs/search?keywords=Php&location=Paris%2C%20%C3%8Ele-de-France%2C%20France&locationId=&geoId=101240143&f_TPR=r2592000&distance=25&position=1&pageNum=0
 
-        search_url = f"https://fr.linkedin.com/jobs/search?keywords={skill}&location={location}&position=1&f_TPR=r{recent}&pageNum=0"
+        search_url = f"https://fr.linkedin.com/jobs/search?keywords={self.mskill}&location={location}&position=1&f_TPR=r{recent}&pageNum=0"
         self.job= []
         op = uc.ChromeOptions()
         custom_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
@@ -52,10 +53,14 @@ class link():
         self.active_flag = True
         self.driver.get(search_url)
         time.sleep(2)
-        self.job_fetch()
-        self.driver.quit()
+        try:
+            self.job_fetch()
 
-        return self.job
+        except:
+            pass
+            self.driver.quit()
+        self.driver.quit()
+        return self.job 
     
     def job_fetch(self):
         divpanel = WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.XPATH, "//div[@class='base-serp-page__content']")))
@@ -84,6 +89,7 @@ class link():
               adata = i.find_element(By.XPATH, ".//a[@data-tracking-control-name='public_jobs_jserp-result_search-card']")
               if adata.text !='':
                 monsterJob["title"] = adata.text
+                monsterJob["skill"] = self.mskill
                 monsterJob["site_name"]="LinkedIn"
                 monsterJob["job_link"]= adata.get_attribute('href')
                 monsterJob["company"]= i.find_element(By.XPATH, ".//h4[@class='base-search-card__subtitle']").text
