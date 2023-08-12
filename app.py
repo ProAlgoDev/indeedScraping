@@ -96,6 +96,7 @@ class MainWindow(QMainWindow):
     def start_convert(self):
       location = self.locationinput.text()
       skill = self.skillinput.text()
+      self.mskill = skill.split(',')
       date = self.dateinput.text()
       if location =='' or skill =='' or date =='':
        self.show_alert("Fill the blank")
@@ -126,43 +127,60 @@ class MainWindow(QMainWindow):
       # link_job  = m_link.init(location,skill,date)
 
       # Create threads for each function
-      thread_monster = threading.Thread(target=self.run_monster, args=(location, skill, date,))
-      thread_indeed = threading.Thread(target=self.run_indeed, args=(location, skill, date,))
-      thread_link = threading.Thread(target=self.run_link, args=(location, skill, date,))
+      thread_monster = threading.Thread(target=self.run_monster, args=(location, skill, date,self.mskill,))
+      thread_indeed = threading.Thread(target=self.run_indeed, args=(location, skill, date,self.mskill,))
+      thread_link = threading.Thread(target=self.run_link, args=(location, skill, date,self.mskill,))
 
       # Start the threads
       thread_monster.start()
       thread_indeed.start()
       thread_link.start()
 
+      # elastic search,redis,couchbase
       # Wait for all threads to finish
       thread_monster.join()
       thread_indeed.join()
       thread_link.join()
-
-      job = self.indeed_job + self.monster_job+self.link_job
+# self.indeed_job + self.monster_job+
+      job = self.indeed_job+ self.monster_job+self.link_job
+      # self.monster_job
       excel = "job.xlsx"
       file = open(excel,"a")
       file.close()
       df = pd.DataFrame(job)
       df = df.dropna(how='any')
+      # duplicates_mask = df.duplicated(keep=False)
+
+      # # Drop duplicated rows
+      # non_duplicates_df = df[~duplicates_mask].drop_duplicates()
       df.to_excel(excel,index=False)
       print(df)
       self.state.setText("Done!")
 
-    def run_monster(self,location, skill, date):
-        m_monster = monster.monster()
-        self.monster_job = m_monster.init(location, skill, date)
-        # Your processing with monster_job
+    def run_monster(self,location, skill, date,mskill):
+        self.monster_job = []
+        tmpmonster = []
+        for i in mskill:
+          m_monster = monster.monster()
+          tmpmonster = m_monster.init(location, skill, date,i)
+          self.monster_job+=tmpmonster
+          # Your processing with monster_job
 
-    def run_indeed(self,location, skill, date):
-        m_indeed = indeed.indeed()
-        self.indeed_job = m_indeed.init(location, skill, date)
+    def run_indeed(self,location, skill, date,mskill):
+        self.indeed_job = []
+        for j in mskill:
+          m_indeed = indeed.indeed()
+          tmppindeed = m_indeed.init(location, skill, date,j)
+          self.indeed_job+=tmppindeed
         # Your processing with indeed_job
 
-    def run_link(self,location, skill, date):
-        m_link = link.link()
-        self.link_job = m_link.init(location, skill, date)
+    def run_link(self,location, skill, date,mskill):
+        self.link_job = []
+        tmplink = []
+        for h in mskill:
+          m_link = link.link()
+          tmplink = m_link.init(location, skill, date,h)
+          self.link_job+=tmplink
         # Your processing with link_job
 
 
