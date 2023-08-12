@@ -15,8 +15,10 @@ import time
 import pandas as pd
 
 
-class indeed():   
-    def init(self,location,skill,date):
+class indeed(): 
+    def init(self,location,skill,date,mskill):
+        self.count = 1  
+        self.mskill = mskill
         location = location
         skill=skill
         date = int(date)
@@ -35,7 +37,7 @@ class indeed():
 
 
         # search_url = "https://fr.indeed.com/jobs?q=python%2Creact%2Cphp&l=Paris&fromage=1"
-        search_url = f"https://fr.indeed.com/jobs?q={skill}&l={location}&fromage={date}"
+        search_url = f"https://fr.indeed.com/jobs?q={self.mskill}&l={location}&fromage={date}"
         self.driver.get(search_url)
         time.sleep(1)
         try:
@@ -52,13 +54,16 @@ class indeed():
             WebDriverWait(self.driver,5).until(EC.presence_of_element_located((By.XPATH, "//button[@id='onetrust-accept-btn-handler']"))).click()
         except: pass
         try:
-            
             self.job_fetch()
             while self.active_flag:
                 time.sleep(2)
-                self.job_fetch()
+                try:
+                    self.job_fetch()
+                except: pass
         except:
             pass
+            print("fetcherror")
+            self.driver.quit()
         self.driver.quit()
         return self.job
     def job_fetch(self):
@@ -81,6 +86,7 @@ class indeed():
                     except: pass
                 if jobtitle[:3] == "job" and jobtitle != '':
                     indeedjob["title"] = adata.text
+                    indeedjob["skill"] = self.mskill
                     indeedjob["site_name"] = "Indeed"
                     indeedjob["job_link"] = adata.get_attribute("href")
                     indeedjob["company"] = i.find_element(By.XPATH, ".//span[@class='companyName']").text
@@ -123,13 +129,16 @@ class indeed():
                     
                     self.job.append(indeedjob)
             except:pass
-            time.sleep(.2)
         try: 
-            next = WebDriverWait(left, 10).until(EC.element_to_be_clickable((By.XPATH, ".//a[@data-testid='pagination-page-next']")))
+            self.count+=1
+            print(self.count)
+            # WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.XPATH, f"//a[@aria-label='{self.count}']"))).click()
+            # print("next")
+            next = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//a[@data-testid='pagination-page-next']")))
             next.click()
 
         except: 
-            
+            print("next error")
             self.active_flag = False
             pass
 
