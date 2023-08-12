@@ -18,7 +18,8 @@ import pandas as pd
 import openpyxl
 
 class monster():
-    def init(self,location,skill,date):
+    def init(self,location,skill,date,mskill):
+        self.mskill = mskill
         location = location
         skill = skill
         date = int(date)
@@ -39,7 +40,7 @@ class monster():
         # last+2+weeks
         # recency=last+month
         # %2Creact
-        search_url = f"https://www.monster.fr/emploi/recherche?q={skill}&where={location}&page=1&recency={recent}&so=m.h.s"
+        search_url = f"https://www.monster.fr/emploi/recherche?q={self.mskill}&where={location}&page=1&recency={recent}&so=m.h.s"
         self.job= []
         op = uc.ChromeOptions()
         custom_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
@@ -62,10 +63,13 @@ class monster():
         try:
           WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.XPATH,"//button[@aria-label='Rechercher']"))).click()
         except: pass
-        self.job_fetch()
+        try:
+            self.job_fetch()
+        except: 
+            pass
+            self.driver.quit()
         self.driver.quit()
         return self.job
-    
     def job_fetch(self):
         divpanel = WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.XPATH, "//div[@id='card-scroll-container']")))
         panel = WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.XPATH, "//ul[@class='sc-harTkY jEHPnr']")))
@@ -92,6 +96,7 @@ class monster():
               adata = i.find_element(By.XPATH, ".//a[@data-testid='jobTitle']")
               if adata.text !='':
                 monsterJob["title"] = adata.text
+                monsterJob["skill"] = self.mskill
                 monsterJob["site_name"]="Monster"
                 monsterJob["job_link"]= adata.get_attribute('href')
                 monsterJob["company"]= i.find_element(By.XPATH, ".//span[@data-testid='company']").text
@@ -99,10 +104,4 @@ class monster():
                 monsterJob["post_date"]= i.find_element(By.XPATH, ".//span[@data-testid='jobDetailDateRecency']").text
                 self.job.append(monsterJob)
             except:pass
-        
 
-# instance = monster()
-# job = instance.init()
-# for i in job:
-#     print(i)
-# input("f")
