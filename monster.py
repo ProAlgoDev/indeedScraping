@@ -1,6 +1,4 @@
 
-from asyncio.windows_events import NULL
-from base64 import standard_b64decode
 # import keyword
 import undetected_chromedriver as uc
 
@@ -22,24 +20,24 @@ class monster():
         self.mskill = mskill
         location = location
         skill = skill
-        date = int(date)
-        if date == 1:
-            recent = "today"
-        if date >2 and date <=7:
-            recent = "last+week"
-        if date >7 and date <= 14:
-            recent = "last+2+weeks"
-        if date >14 and date <=30:
-            recent ="last+month"
-        if date>30:
-            recent ="last+month"
+        if date == '':
+            recent = ''
+        try:
+            date = int(date)
+            if date == 1:
+                recent = "today"
+            if date >2 and date <=7:
+                recent = "last+week"
+            if date >7 and date <= 14:
+                recent = "last+2+weeks"
+            if date >14 and date <=30:
+                recent ="last+month"
+            if date>30:
+                recent =""
+        except: 
+            pass
+        
         print(recent)
-        # search_url = "https://www.monster.fr/emploi/recherche?q=python&where=paris&page=1&recency=today&so=m.h.s"
-        # recency=last+2+days
-        # recency=last+week
-        # last+2+weeks
-        # recency=last+month
-        # %2Creact
         search_url = f"https://www.monster.fr/emploi/recherche?q={self.mskill}&where={location}&page=1&recency={recent}&so=m.h.s"
         self.job= []
         op = uc.ChromeOptions()
@@ -74,18 +72,14 @@ class monster():
         divpanel = WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.XPATH, "//div[@id='card-scroll-container']")))
         panel = WebDriverWait(self.driver,10).until(EC.presence_of_element_located((By.XPATH, "//ul[@class='sc-harTkY jEHPnr']")))
         time.sleep(3)
-        scroll_amount = 50  # Adjust this value as needed
+        scroll_amount = 50  
 
         total_height = int(self.driver.execute_script("return arguments[0].scrollHeight", divpanel))
         count = 0
         while True:
-            # Scroll down by scroll_amount pixels
             self.driver.execute_script(f"arguments[0].scrollBy(0, {scroll_amount});", divpanel)
             count +=1
-            # Pause for a short duration to allow content to load
             self.driver.implicitly_wait(10)
-            
-            # Break the loop if you've reached the bottom of the content
             if count >= total_height:
                 break
         self.driver.implicitly_wait(5)
@@ -102,6 +96,11 @@ class monster():
                 monsterJob["company"]= i.find_element(By.XPATH, ".//span[@data-testid='company']").text
                 monsterJob["location"]= i.find_element(By.XPATH, ".//span[@data-testid='jobDetailLocation']").text
                 monsterJob["post_date"]= i.find_element(By.XPATH, ".//span[@data-testid='jobDetailDateRecency']").text
+                print("title------",monsterJob["title"])
+                print("job_link------",monsterJob["job_link"])
+                print("company------",monsterJob["company"])
+                print("location------",monsterJob["location"])
+                print("post_date------",monsterJob["post_date"])
                 self.job.append(monsterJob)
             except:pass
 
