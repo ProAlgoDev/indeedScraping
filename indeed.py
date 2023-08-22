@@ -1,4 +1,6 @@
 import undetected_chromedriver as uc
+from selenium import webdriver
+from seleniumbase import Driver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -34,10 +36,13 @@ class indeed():
         op = uc.ChromeOptions()
         custom_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
         op.add_argument("--disable-blink-feature=AutomationControlled")
+        op.add_experimental_option("excludeSwitches", ["enable-automation"])
+        op.add_experimental_option('useAutomationExtension', False)
         op.add_argument(f'--user-agent={custom_user_agent}')
         op.add_argument(f'--headless={True}')
+        
 
-        self.driver = uc.Chrome(options=op)
+        self.driver = webdriver.Chrome(options=op)
 
         self.driver.execute_script(
                     "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -57,6 +62,9 @@ class indeed():
         self.active_flag = True
         self.driver.get(search_url)
         time.sleep(2)
+        try:
+            WebDriverWait(self.driver,5).until(EC.presence_of_element_located((By.XPATH, "/html/body/div[3]/div/div/div[1]/button"))).click()
+        except:pass
         try:
             WebDriverWait(self.driver,5).until(EC.presence_of_element_located((By.XPATH, "//button[@id='onetrust-accept-btn-handler']"))).click()
         except: pass

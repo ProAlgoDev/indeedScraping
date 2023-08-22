@@ -1,4 +1,6 @@
 import undetected_chromedriver as uc
+from selenium import webdriver
+from seleniumbase import Driver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -25,12 +27,14 @@ class link():
         search_url = f"https://fr.linkedin.com/jobs/search?keywords={self.mskill}&location={location}&position=1&f_TPR=r{recent}&pageNum=0"
         self.job= []
         op = uc.ChromeOptions()
-        custom_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+        op.add_experimental_option("excludeSwitches", ["enable-automation"])
+        op.add_experimental_option('useAutomationExtension', False)
+        custom_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
         op.add_argument("--disable-blink-feature=AutomationControlled")
         op.add_argument(f'--user-agent={custom_user_agent}')
         op.add_argument(f'--headless={True}')
 
-        self.driver = uc.Chrome(options=op)
+        self.driver = webdriver.Chrome(options=op)
         self.driver.set_window_size(600, 900)
         # self.driver.maximize_window()
         self.driver.execute_script(
@@ -87,6 +91,7 @@ class link():
             checknext = True
             pass
         joblist = panel.find_elements(By.TAG_NAME, "li")
+        self.driver.implicitly_wait(30)
         for i in joblist:
             monsterJob={}
             try:
