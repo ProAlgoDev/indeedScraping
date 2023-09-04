@@ -7,6 +7,8 @@ import link
 from tkinter import messagebox
 import argparse
 
+
+
 monster_job = []
 link_job = []
 indeed_job = []
